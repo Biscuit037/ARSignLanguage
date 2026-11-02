@@ -8,6 +8,9 @@ public class HandDebug : MonoBehaviour
     void Log(HandFrame f)
     {
         var n = HandNormalizer.Normalize(f);
-        Debug.Log($"{(f.IsLeft ? "L" : "R")}  raw={f.Landmarks[8]:F2} norm={n[8]:F2} len={n[8].magnitude:F2}");
+        var fingers = SignRules.GetFingerState(n);
+        float idxRatio = n[9].magnitude / n[6].magnitude;
+        float thumbDist = Vector3.Distance(n[4], n[17]);
+        Debug.Log($"{fingers} {SignRules.Classify(fingers) ?? "-"} idxRatio={idxRatio:F2}  thumb={thumbDist:F2}");
     }
 }
