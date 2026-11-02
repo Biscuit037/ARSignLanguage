@@ -2,8 +2,12 @@ using UnityEngine;
 
 public class HandDebug : MonoBehaviour
 {
-    private void OnEnable() => HandInput.OnHand += Log;
-    private void OnDisable() => HandInput.OnHand -= Log;
+    //private void OnEnable() => HandInput.OnHand += Log;
+    //private void OnDisable() => HandInput.OnHand -= Log;
+    private void OnEnable() => SignConfirmer.OnSignConfirm += LogCommand;
+    private void OnDisable() => SignConfirmer.OnSignConfirm -= LogCommand;
+
+    void LogCommand(string cmd) => Debug.Log($"<b>CONFIRMED:</b> {cmd}");
 
     void Log(HandFrame f)
     {

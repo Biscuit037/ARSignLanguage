@@ -7,10 +7,14 @@ public struct FingerState
     public override string ToString() => $"{(Thumb ? 1 : 0)}{(Index ? 1 : 0)}{(Middle ? 1 : 0)}{(Ring ? 1 : 0)}{(Pinky ? 1 : 0)}";
 }
 
-public class SignRules 
+public class SignRules
 {
+    // A finger is extended when its tip is this much farther from the wrist than its PIP joint.
     public static float FingerRatio = 1.15f;
+    // Thumb is extended when its tip is farther than this from the pinky base (normalized units).
     public static float ThumbDistance = 1.0f;
+
+    // Expects points from HandNormalizer.Normalize (wrist at origin, palm length = 1).
     public static FingerState GetFingerState(Vector3[] p)
     {
         return new FingerState
@@ -25,9 +29,10 @@ public class SignRules
 
     static bool IsExtended(Vector3[] p, int tip, int pip) => p[tip].magnitude > p[pip].magnitude * FingerRatio;
 
+    // Returns the command name, "Rest" for a fist, or null if no rule matches.
     public static string Classify(FingerState f)
     {
-        switch (f.ToString())
+        switch (f.ToString()) // order: thumb, index, middle, ring, pinky
         {
             case "01000": return "Forward";
             case "01100": return "Left";
