@@ -168,7 +168,7 @@ public class GridGame : MonoBehaviour
         queue.Clear();
         ResetRobot();
         RefreshQueue(-1);
-        SetStatus(won ? "Clear! Play again" : "Try again");
+        SetStatus(won ? "Clear! Play again" : "Add commands, then Start");
         running = false;
     }
 
