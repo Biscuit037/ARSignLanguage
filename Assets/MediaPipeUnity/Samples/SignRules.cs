@@ -12,7 +12,7 @@ public class SignRules
     // A finger is extended when its tip is this much farther from the wrist than its PIP joint.
     public static float FingerRatio = 1.15f;
     // Thumb is extended when its tip is farther than this from the pinky base (normalized units).
-    public static float ThumbDistance = 1.0f;
+    public static float ThumbDistance = 1.25f;
 
     // Expects points from HandNormalizer.Normalize (wrist at origin, palm length = 1).
     public static FingerState GetFingerState(Vector3[] p)
@@ -32,15 +32,15 @@ public class SignRules
     // Returns the command name, "Rest" for a fist, or null if no rule matches.
     public static string Classify(FingerState f)
     {
-        switch (f.ToString()) // order: thumb, index, middle, ring, pinky
-        {
-            case "01000": return "Forward";
-            case "01100": return "Left";
-            case "01110": return "Right";
-            case "11111": return "Start";
-            case "00000": return "Rest";
-                   
-            default: return null;
-        }
+        bool fourCurled = !f.Index && !f.Middle && !f.Ring && !f.Pinky;
+
+        if (fourCurled)
+            return f.Thumb ? "Forward" : "Rest";                      
+
+        if (!f.Index && f.Middle && f.Ring && f.Pinky) return "Left";  
+        if (f.Index && f.Middle && !f.Ring && !f.Pinky) return "Right"; 
+        if (f.Index && f.Middle && f.Ring && f.Pinky) return "Start"; 
+
+        return null;
     }
 }

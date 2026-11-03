@@ -156,13 +156,13 @@ public class GridGame : MonoBehaviour
             else if (cmd == "Left" || cmd == "Right")
             {
                 robotDir = (robotDir + (cmd == "Right" ? 1 : 3)) % 4;
-                yield return Animate(robot.position, DirToRotation(robotDir));
+                yield return Animate(robot.localPosition, DirToRotation(robotDir));
             }
         }
 
         RefreshQueue(-1);
         bool won = !crashed && robotCell == goalCell;
-        SetStatus(won ? "Clear!" : crashed ? "Bumped into a wall!" : "Didn't reach the goal");
+        SetStatus(won ? "Clear!" : crashed ? "Failed! -> Bumped into a wall..." : "Failed! -> Didn't reach the goal...");
         yield return new WaitForSeconds(resultDelay);
 
         queue.Clear();
@@ -203,7 +203,7 @@ public class GridGame : MonoBehaviour
                 Vector3 p = CellToWorld(new Vector2Int(x, y));
                 if (c == '#')
                 {
-                    MakeCube("Wall", p + Vector3.up * 0.5f, Vector3.one, new Color(0.25f, 0.25f, 0.3f));
+                    MakeCube("Wall", p + Vector3.up * -0.37f, Vector3.one, new Color(0.25f, 0.25f, 0.3f));
                 }
                 else
                 {
@@ -214,15 +214,10 @@ public class GridGame : MonoBehaviour
         }
 
         robot = MakeCube("Robot", Vector3.zero, Vector3.one * 0.6f, new Color(0.2f, 0.5f, 1f)).transform;
+
         var nose = MakeCube("Nose", Vector3.zero, Vector3.one * 0.4f, Color.yellow, robot);
         nose.transform.localPosition = new Vector3(0f, 0f, 0.55f);
-        //if (autoFrameCamera && Camera.main)
-        //{
-        //    var center = new Vector3((width - 1) / 2f, 0f, -(height - 1) / 2f);
-        //    float size = Mathf.Max(width, height);
-        //    Camera.main.transform.position = center + new Vector3(0f, size * 1.1f, -size * 0.8f);
-        //    Camera.main.transform.LookAt(center);
-        //}
+
         var cam = boardCamera != null ? boardCamera : Camera.main;
         if(autoFrameCamera && cam)
         {
@@ -251,7 +246,8 @@ public class GridGame : MonoBehaviour
     {
         robotCell = startCell;
         robotDir = 0;
-        robot.SetPositionAndRotation(RobotPosition(robotCell), DirToRotation(robotDir));
+        robot.localPosition = RobotPosition(robotCell);
+        robot.localRotation = DirToRotation(robotDir);
     }
 
     bool IsWall(Vector2Int c) => c.x < 0 || c.y < 0 || c.x >= width || c.y >= height || cells[c.x, c.y] == '#';
@@ -262,22 +258,27 @@ public class GridGame : MonoBehaviour
 
     IEnumerator Animate(Vector3 toPos, Quaternion toRot)
     {
-        Vector3 fromPos = robot.position;
-        Quaternion fromRot = robot.rotation;
+        Vector3 fromPos = robot.localPosition;
+        Quaternion fromRot = robot.localRotation;
         for (float t = 0; t < 1f; t += Time.deltaTime / stepTime)
         {
             float s = Mathf.SmoothStep(0f, 1f, t);
-            robot.SetPositionAndRotation(Vector3.Lerp(fromPos, toPos, s), Quaternion.Slerp(fromRot, toRot, s));
+
+            robot.localPosition = Vector3.Lerp(fromPos, toPos, s);
+            robot.localRotation = Quaternion.Slerp(fromRot, toRot, s);
+         
             yield return null;
         }
-        robot.SetPositionAndRotation(toPos, toRot);
+        robot.localPosition = toPos;
+        robot.localRotation = toRot;
     }
 
     IEnumerator Bump()
     {
         Vector3 home = robot.position;
-        yield return Animate(home + robot.forward * 0.3f, robot.rotation);
-        yield return Animate(home, robot.rotation);
+        Vector3 forward = DirToRotation(robotDir) * Vector3.forward;   // Local facing direction.
+        yield return Animate(home + forward * 0.3f, robot.localRotation);
+        yield return Animate(home, robot.localRotation);
     }
 
     void RefreshQueue(int current)
