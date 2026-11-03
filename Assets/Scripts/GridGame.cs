@@ -48,7 +48,7 @@ public class GridGame : MonoBehaviour
     {
         BuildLevel();
         ResetRobot();
-        SetStatus("Add command, then Start");
+        SetStatus("Add commands, then Start");
         RefreshQueue(-1);
     }
 
